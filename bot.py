@@ -165,7 +165,7 @@ async def on_callback(update, ctx):
             f"✅ 订单成功 {r.get('order_id','')}" if r["success"] else f"❌ {r['error']}"
         )
 
-def main():
+def masync def main():
     app = Application.builder().token(TOKEN).build()
     for cmd, fn in [
         ("start", cmd_start), ("help", cmd_start),
@@ -180,4 +180,6 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
-    main()
+    import asyncio
+    asyncio.run(main())
+
