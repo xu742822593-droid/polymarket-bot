@@ -13,6 +13,7 @@ logging.basicConfig(level=logging.INFO)
 ALLOWED = int(os.getenv("TG_ALLOWED_USER_ID", "0"))
 TOKEN = os.getenv("TG_BOT_TOKEN")
 
+
 def auth(fn):
     async def wrap(update: Update, ctx: ContextTypes.DEFAULT_TYPE):
         if update.effective_user.id != ALLOWED:
@@ -20,6 +21,7 @@ def auth(fn):
             return
         return await fn(update, ctx)
     return wrap
+
 
 @auth
 async def cmd_start(update, ctx):
@@ -35,6 +37,7 @@ async def cmd_start(update, ctx):
         "/status — 运行状态"
     )
 
+
 @auth
 async def cmd_search(update, ctx):
     if not ctx.args:
@@ -49,6 +52,7 @@ async def cmd_search(update, ctx):
         for t in m["tokens"]:
             text += f"  {t['outcome']}: {t['token_id'][:24]}...\n"
         await update.message.reply_text(text)
+
 
 @auth
 async def cmd_price(update, ctx):
@@ -71,6 +75,7 @@ async def cmd_price(update, ctx):
         reply_markup=InlineKeyboardMarkup(kb)
     )
 
+
 @auth
 async def cmd_buy(update, ctx):
     if len(ctx.args) < 3:
@@ -85,6 +90,7 @@ async def cmd_buy(update, ctx):
         f"确认买入?\nToken: {tid[:24]}...\n价格: {price}  金额: {size} USDC",
         reply_markup=InlineKeyboardMarkup(kb)
     )
+
 
 @auth
 async def cmd_sell(update, ctx):
@@ -101,6 +107,7 @@ async def cmd_sell(update, ctx):
         reply_markup=InlineKeyboardMarkup(kb)
     )
 
+
 @auth
 async def cmd_orders(update, ctx):
     orders = pm.get_open_orders()
@@ -111,6 +118,7 @@ async def cmd_orders(update, ctx):
     for o in orders[:5]:
         text += f"价格:{o.get('price')}  量:{o.get('original_size')} USDC\n已成交:{o.get('size_matched','0')}\n\n"
     await update.message.reply_text(text)
+
 
 @auth
 async def cmd_history(update, ctx):
@@ -123,6 +131,7 @@ async def cmd_history(update, ctx):
         text += f"{o['side']} @ {o['price']} x {o['size']} USDC\n{o['time']}  {o['status']}\n\n"
     await update.message.reply_text(text)
 
+
 @auth
 async def cmd_cancelall(update, ctx):
     kb = [[
@@ -130,6 +139,7 @@ async def cmd_cancelall(update, ctx):
         InlineKeyboardButton("❌ 不取消", callback_data="cancel"),
     ]]
     await update.message.reply_text("确认取消所有挂单？", reply_markup=InlineKeyboardMarkup(kb))
+
 
 @auth
 async def cmd_status(update, ctx):
@@ -140,6 +150,7 @@ async def cmd_status(update, ctx):
         f"当前挂单: {len(orders)} 条\n"
         f"历史总单: {len(h)} 条"
     )
+
 
 async def on_callback(update, ctx):
     q = update.callback_query
@@ -165,8 +176,8 @@ async def on_callback(update, ctx):
             f"✅ 订单成功 {r.get('order_id','')}" if r["success"] else f"❌ {r['error']}"
         )
 
-async def main():
 
+async def main():
     app = Application.builder().token(TOKEN).build()
     for cmd, fn in [
         ("start", cmd_start), ("help", cmd_start),
@@ -178,9 +189,9 @@ async def main():
         app.add_handler(CommandHandler(cmd, fn))
     app.add_handler(CallbackQueryHandler(on_callback))
     print("🤖 Bot 启动成功")
-    app.run_polling()
+    await app.run_polling()
+
 
 if __name__ == "__main__":
     import asyncio
     asyncio.run(main())
-
