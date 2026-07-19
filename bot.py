@@ -176,7 +176,6 @@ async def on_callback(update, ctx):
             f"✅ 订单成功 {r.get('order_id','')}" if r["success"] else f"❌ {r['error']}"
         )
 
-
 async def main():
     app = Application.builder().token(TOKEN).build()
     for cmd, fn in [
@@ -189,11 +188,16 @@ async def main():
         app.add_handler(CommandHandler(cmd, fn))
     app.add_handler(CallbackQueryHandler(on_callback))
     print("🤖 Bot 启动成功")
-    await app.run_polling()
+    async with app:
+        await app.start()
+        await app.updater.start_polling()
+        await asyncio.sleep(float('inf'))
+        await app.updater.stop()
+        await app.stop()
+
+
 
 
 if __name__ == "__main__":
     import asyncio
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(main())
+    asyncio.run(main())
