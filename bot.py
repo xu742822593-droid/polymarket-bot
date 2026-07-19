@@ -165,7 +165,8 @@ async def on_callback(update, ctx):
             f"✅ 订单成功 {r.get('order_id','')}" if r["success"] else f"❌ {r['error']}"
         )
 
-def masync def main():
+async def main():
+
     app = Application.builder().token(TOKEN).build()
     for cmd, fn in [
         ("start", cmd_start), ("help", cmd_start),
