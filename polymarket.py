@@ -24,6 +24,7 @@ client = get_client()
 def search_markets(keyword, limit=4):
     try:
         data = client.get_markets()
+        print(f"Total markets: {len(data.get('data', []))}")
         out = []
         for m in data.get("data", []):
             if m.get("active") and not m.get("closed"):
@@ -36,7 +37,11 @@ def search_markets(keyword, limit=4):
                     })
                     if len(out) >= limit:
                         break
+        print(f"Matched markets: {len(out)}")
         return out
+    except Exception as e:
+        print(f"search_markets error: {e}")
+        return []
     except Exception as e:
         logger.error(f"search_markets: {e}")
         print(f"search_markets error: {e}")
