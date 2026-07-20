@@ -39,6 +39,7 @@ def search_markets(keyword, limit=4):
         return out
     except Exception as e:
         logger.error(f"search_markets: {e}")
+        print(f"search_markets error: {e}")
         return []
 
 def get_price_info(token_id):
