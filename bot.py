@@ -1,3 +1,16 @@
+import os
+from py_clob_client.client import ClobClient
+
+try:
+    _key = os.getenv("POLY_PRIVATE_KEY")
+    if _key:
+        _c = ClobClient(host="https://clob.polymarket.com", key=_key, chain_id=137)
+        _creds = _c.create_or_derive_api_creds()
+        print("POLY_API_KEY=" + _creds.api_key)
+        print("POLY_API_SECRET=" + _creds.api_secret)
+        print("POLY_API_PASSPHRASE=" + _creds.api_passphrase)
+except Exception as e:
+    print(f"API Key generation failed: {e}")
 import os, logging
 from dotenv import load_dotenv
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
