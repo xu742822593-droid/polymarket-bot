@@ -31,29 +31,31 @@ def get_client():
 
 client = get_client()
 
+import requests
+
 def search_markets(keyword, limit=4):
     try:
-        data = client.get_markets()
-        markets = data.get("data", [])
-        print(f"[DEBUG] Total markets: {len(markets)}")
+        url = "https://gamma-api.polymarket.com/markets"
+        params = {"active": "true", "closed": "false", "limit": 100}
+        resp = requests.get(url, params=params, timeout=10)
+        markets = resp.json()
+        print(f"[DEBUG] Total: {len(markets)}")
         out = []
         for m in markets:
-            if m.get("active") and not m.get("closed"):
-                if keyword.lower() in m["question"].lower():
-                    out.append({
-                        "question": m["question"][:80],
-                        "condition_id": m["condition_id"],
-                        "tokens": m.get("tokens", []),
-                        "end_date": m.get("end_date_iso", "")[:10],
-                    })
-                    if len(out) >= limit:
-                        break
+            if keyword.lower() in m.get("question", "").lower():
+                out.append({
+                    "question": m["question"][:80],
+                    "condition_id": m.get("conditionId", ""),
+                    "tokens": m.get("tokens", []),
+                    "end_date": m.get("endDate", "")[:10],
+                })
+                if len(out) >= limit:
+                    break
         print(f"[DEBUG] Matched: {len(out)}")
         return out
     except Exception as e:
-        print(f"[ERROR] search_markets: {e}")
+        print(f"[ERROR] {e}")
         return []
-
 def get_price_info(token_id):
     try:
         book = client.get_order_book(token_id)
