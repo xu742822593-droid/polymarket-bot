@@ -1,1 +1,1 @@
-worker: python create_api_key.py
+worker: python bot.py
