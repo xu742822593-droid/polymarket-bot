@@ -20,7 +20,7 @@ def get_client():
                 api_secret=api_secret,
                 api_passphrase=api_passphrase,
             ),
-            signature_type=2,
+            signature_type=1,
         )
     else:
         return ClobClient(
