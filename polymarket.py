@@ -7,26 +7,37 @@ from py_clob_client.order_builder.constants import BUY, SELL
 logger = logging.getLogger(__name__)
 
 def get_client():
-    return ClobClient(
-        host="https://clob.polymarket.com",
-        key=os.getenv("POLY_PRIVATE_KEY"),
-        chain_id=int(os.getenv("POLY_CHAIN_ID", "137")),
-        creds=ApiCreds(
-            api_key=os.getenv("POLY_API_KEY"),
-            api_secret=os.getenv("POLY_API_SECRET"),
-            api_passphrase=os.getenv("POLY_API_PASSPHRASE"),
-        ),
-        signature_type=2,
-    )
+    api_key = os.getenv("POLY_API_KEY")
+    api_secret = os.getenv("POLY_API_SECRET")
+    api_passphrase = os.getenv("POLY_API_PASSPHRASE")
+    if api_key and api_secret and api_passphrase:
+        return ClobClient(
+            host="https://clob.polymarket.com",
+            key=os.getenv("POLY_PRIVATE_KEY"),
+            chain_id=int(os.getenv("POLY_CHAIN_ID", "137")),
+            creds=ApiCreds(
+                api_key=api_key,
+                api_secret=api_secret,
+                api_passphrase=api_passphrase,
+            ),
+            signature_type=2,
+        )
+    else:
+        return ClobClient(
+            host="https://clob.polymarket.com",
+            key=os.getenv("POLY_PRIVATE_KEY"),
+            chain_id=int(os.getenv("POLY_CHAIN_ID", "137")),
+        )
 
 client = get_client()
 
 def search_markets(keyword, limit=4):
     try:
         data = client.get_markets()
-        print(f"Total markets: {len(data.get('data', []))}")
+        markets = data.get("data", [])
+        print(f"[DEBUG] Total markets: {len(markets)}")
         out = []
-        for m in data.get("data", []):
+        for m in markets:
             if m.get("active") and not m.get("closed"):
                 if keyword.lower() in m["question"].lower():
                     out.append({
@@ -37,14 +48,10 @@ def search_markets(keyword, limit=4):
                     })
                     if len(out) >= limit:
                         break
-        print(f"Matched markets: {len(out)}")
+        print(f"[DEBUG] Matched: {len(out)}")
         return out
     except Exception as e:
-        print(f"search_markets error: {e}")
-        return []
-    except Exception as e:
-        logger.error(f"search_markets: {e}")
-        print(f"search_markets error: {e}")
+        print(f"[ERROR] search_markets: {e}")
         return []
 
 def get_price_info(token_id):
@@ -60,7 +67,7 @@ def get_price_info(token_id):
             "spread": round(ask - bid, 4) if bid and ask else None,
         }
     except Exception as e:
-        logger.error(f"get_price_info: {e}")
+        print(f"[ERROR] get_price_info: {e}")
         return {}
 
 def place_order(token_id, price, size, side="BUY"):
@@ -78,7 +85,7 @@ def place_order(token_id, price, size, side="BUY"):
         _save(record)
         return {"success": True, **record}
     except Exception as e:
-        logger.error(f"place_order: {e}")
+        print(f"[ERROR] place_order: {e}")
         return {"success": False, "error": str(e)}
 
 def get_open_orders():
